@@ -65,11 +65,13 @@ unsigned long mqttReconnectDelay = 5000;								// How long in milliseconds to d
 float tempC;																	// A global to hold the temperature in Celsius.
 float tempF;																	// A global to hold the temperature in Fahrenheit.
 float humidity;																// A global to hold the relative humidity reading.
+long rssi;																		// A global to hold the Received Signal Strength Indicator.
 char macAddress[18];															// The MAC address of the WiFi NIC.
 char ipAddress[16];															// The IP address given to the device.
-char *activeWifiSsid;
-char *activeMqttBroker;
-int activeMqttPort;
+char *activeWifiSsid;														// The WiFi SSID currently connected to.
+char *activeMqttBroker;														// The MQTT broker currently connected to.
+unsigned int activeMqttPort;												// The MQTT port currently in use.
+
 
 // Create class objects.
 WiFiClient espClient;					  // Network client.
@@ -195,14 +197,10 @@ void setup()
 	// No authentication by default.  Usage:
 	// ArduinoOTA.setPassword( ( const char * )"abc123" );
 
-	ArduinoOTA.onStart( []()
-							  { Serial.println( "Starting OTA communication." ); } );
-	ArduinoOTA.onEnd( []()
-							{ Serial.println( "\nTerminating OTA communication." ); } );
-	ArduinoOTA.onProgress( []( unsigned int progress, unsigned int total )
-								  { Serial.printf( "OTA progress: %u%%\r", ( progress / ( total / 100 ) ) ); } );
-	ArduinoOTA.onError( []( ota_error_t error )
-							  {
+	ArduinoOTA.onStart( [](){ Serial.println( "Starting OTA communication." ); } );
+	ArduinoOTA.onEnd( [](){ Serial.println( "\nTerminating OTA communication." ); } );
+	ArduinoOTA.onProgress( []( unsigned int progress, unsigned int total ){ Serial.printf( "OTA progress: %u%%\r", ( progress / ( total / 100 ) ) ); } );
+	ArduinoOTA.onError( []( ota_error_t error ){
 		Serial.printf( "Error[%u]: ", error );
 		if( error == OTA_AUTH_ERROR ) Serial.println( "OTA authentication failed!" );
 		else if( error == OTA_BEGIN_ERROR ) Serial.println( "OTA transmission failed to initiate properly!" );
@@ -479,6 +477,7 @@ bool mqttMultiConnect( int maxAttempts )
  */
 void readTelemetry()
 {
+	rssi = WiFi.RSSI();
 	// Read fresh data from the sensor.
 	if( htu21d.read() )
 	{
@@ -535,7 +534,6 @@ void printTelemetry()
 	Serial.printf( "Temperature: %.2f C\n", tempC );
 	Serial.printf( "Temperature: %.2f F\n", tempF );
 	Serial.printf( "Humidity: %.2f %%\n", humidity );
-	long rssi = WiFi.RSSI();
 	Serial.printf( "WiFi RSSI: %ld\n", rssi );
 } // End of printTelemetry() function.
 
@@ -546,8 +544,6 @@ void printTelemetry()
  */
 void publishStats()
 {
-	// Read the RSSI.
-	long rssi = WiFi.RSSI();
 	char mqttStatsString[256];
 	// Create a JSON Document on the stack.
 	StaticJsonDocument<BUFFER_SIZE> doc;
@@ -578,7 +574,6 @@ void publishStats()
  */
 void publishTelemetry()
 {
-	long rssi = WiFi.RSSI();
 	char mqttString[BUFFER_SIZE]; // A String to hold the JSON.
 
 	// Create a JSON Document on the stack.
