@@ -5,15 +5,15 @@
  *    <location>/<device>/<device reading>
  *    <location>/<device>/<sensor type>/<sensor reading>
  * @copyright   Copyright © 2022 Adam Howell
- * @licence     The MIT License (MIT)
+ * @license     The MIT License (MIT)
  */
 #ifdef ESP8266
 // These headers are installed when the ESP8266 is installed in board manager.
-#include "ESP8266WiFi.h" // ESP8266 Wifi support.  https://github.com/esp8266/Arduino/tree/master/libraries/ESP8266WiFi
+#include "ESP8266WiFi.h" // ESP8266 WiFi support.  https://github.com/esp8266/Arduino/tree/master/libraries/ESP8266WiFi
 #include <ESP8266mDNS.h> // OTA - Multicast DNS for the ESP8266.
 #elif ESP32
 // These headers are installed when the ESP32 is installed in board manager.
-#include "WiFi.h"		// ESP32 Wifi support.  https://github.com/espressif/arduino-esp32/blob/master/libraries/WiFi/src/WiFi.h
+#include "WiFi.h"		// ESP32 WiFi support.  https://github.com/espressif/arduino-esp32/blob/master/libraries/WiFi/src/WiFi.h
 #include <ESPmDNS.h> // OTA - Multicast DNS for the ESP32.
 #else
 #include "WiFi.h" // Arduino Wifi support.  This header is part of the standard library.  https://www.arduino.cc/en/Reference/WiFi
@@ -45,7 +45,7 @@ const char *ipTopic = "adamsDesk/8266/ip";							// The topic used to publish th
 const char *rssiTopic = "adamsDesk/8266/rssi";						// The topic used to publish the WiFi Received Signal Strength Indicator.
 const char *publishCountTopic = "adamsDesk/8266/publishCount"; // The topic used to publish the loop count.
 const char *notesTopic = "adamsDesk/8266/notes";					// The topic used to publish notes relevant to this project.
-const char *tempCTopic = "adamsDesk/8266/sht40/tempC";			// The topic used to publish the temperature in Celcius.
+const char *tempCTopic = "adamsDesk/8266/sht40/tempC";			// The topic used to publish the temperature in Celsius.
 const char *tempFTopic = "adamsDesk/8266/sht40/tempF";			// The topic used to publish the temperature in Fahrenheit.
 const char *humidityTopic = "adamsDesk/8266/sht40/humidity";	// The topic used to publish the humidity.
 const char *mqttTopic = "espWeather";									// The topic used to publish a single JSON message containing all data.
@@ -54,7 +54,7 @@ const int BUFFER_SIZE = 512;												// The maximum packet size MQTT should t
 const int LED_PIN = 2;														// The blue LED on the Freenove devkit.
 unsigned int consecutiveBadTemp = 0;									// Holds the current number of consecutive invalid temperature readings.
 unsigned int consecutiveBadHumidity = 0;								// Holds the current number of consecutive invalid humidity readings.
-unsigned int networkIndex = 2112;										// Holds the correct index for the network arrays: wifiSsidList[], wifiPassArray[], mqttBrokerArray[], and mqttPortArray[].
+unsigned int networkIndex = 2112;										// Holds the correct index for the network arrays: wifiSsidArray[], wifiPassArray[], mqttBrokerArray[], and mqttPortArray[].
 unsigned long publishInterval = 60000;									// The delay in milliseconds between MQTT publishes.  This prevents "flooding" the broker.
 unsigned long telemetryInterval = 10000;								// The delay in milliseconds between polls of the sensor.  This should be greater than 100 milliseconds.
 unsigned long lastPublishTime = 0;										// The time since last MQTT publish.
@@ -279,7 +279,7 @@ void wifiMultiConnect()
 		const char *wifiPassword = wifiPassArray[networkArrayIndex];
 
 		// Announce the WiFi parameters for this connection attempt.
-		Serial.print( "Attempting to connect to to SSID \"" );
+		Serial.print( "Attempting to connect to SSID \"" );
 		Serial.print( wifiSsid );
 		Serial.println( "\"" );
 
@@ -315,7 +315,7 @@ void wifiMultiConnect()
 
 			if( WiFi.status() == WL_CONNECTED )
 			{
-				digitalWrite( LED_PIN, LOW ); // Turn the LED on to show the connection was successfull.
+				digitalWrite( LED_PIN, LOW ); // Turn the LED on to show the connection was successful.
 				Serial.print( "IP address: " );
 				snprintf( ipAddress, 16, "%d.%d.%d.%d", WiFi.localIP()[0], WiFi.localIP()[1], WiFi.localIP()[2], WiFi.localIP()[3] );
 				Serial.println( ipAddress );
@@ -405,7 +405,7 @@ bool mqttMultiConnect( int maxAttempts )
 	// Loop until MQTT has connected.
 	while( !mqttClient.connected() && attemptNumber < maxAttempts )
 	{
-		// Put the macAddress and randNum into clientId.
+		// Put the macAddress and random number into clientId.
 		char clientId[22];
 		snprintf( clientId, 22, "%s-%03ld", macAddress, random( 999 ) );
 		// Connect to the broker using the MAC address for a clientID.  This guarantees that the clientID is unique.
@@ -413,7 +413,7 @@ bool mqttMultiConnect( int maxAttempts )
 		Serial.printf( "Attempt # %d....", ( attemptNumber + 1 ) );
 		if( mqttClient.connect( clientId ) )
 		{
-			digitalWrite( LED_PIN, LOW ); // Turn the LED on to show the connection was successfull.
+			digitalWrite( LED_PIN, LOW ); // Turn the LED on to show the connection was successful.
 			Serial.println( " connected." );
 			if( !mqttClient.setBufferSize( BUFFER_SIZE ) )
 			{
@@ -424,7 +424,7 @@ bool mqttMultiConnect( int maxAttempts )
 			publishStats();
 			// Subscribe to the command topic.
 			if( mqttClient.subscribe( mqttCommandTopic ) )
-				Serial.printf( "Succsefully subscribed to topic '%s'.\n", mqttCommandTopic );
+				Serial.printf( "Successfully subscribed to topic '%s'.\n", mqttCommandTopic );
 			else
 				Serial.printf( "Failed to subscribe to topic '%s'!\n", mqttCommandTopic );
 		}
@@ -596,7 +596,7 @@ void publishTelemetry()
 	bool success = mqttClient.publish( mqttTopic, mqttString, false );
 	if( success )
 	{
-		Serial.println( "Succsefully published to:" );
+		Serial.println( "Successfully published to:" );
 		char buffer[20];
 		// New format: <location>/<device>/<sensor>/<metric>
 		if( mqttClient.publish( sketchTopic, __FILE__, false ) )
