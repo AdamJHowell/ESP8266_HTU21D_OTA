@@ -10,7 +10,7 @@
 #ifdef ESP8266
 // These headers are installed when the ESP8266 is installed in board manager.
 #include "ESP8266WiFi.h" // ESP8266 WiFi support.  https://github.com/esp8266/Arduino/tree/master/libraries/ESP8266WiFi
-#include <ESP8266mDNS.h> // OTA - Multicast DNS for the ESP8266.
+#include <ESP8266mDNS.h> // OTA - mDNSResponder (Multicast DNS) for the ESP8266 family.
 #elif ESP32
 // These headers are installed when the ESP32 is installed in board manager.
 #include "WiFi.h"		// ESP32 WiFi support.  https://github.com/espressif/arduino-esp32/blob/master/libraries/WiFi/src/WiFi.h
@@ -209,6 +209,7 @@ void setup()
 		else if( error == OTA_END_ERROR ) Serial.println( "OTA transmission failed to terminate properly!" ); } );
 	ArduinoOTA.begin();
 	Serial.println( "OTA is configured and ready." );
+
 	Serial.printf( "IP address: %s\n", ipAddress );
 
 	// Connect to the MQTT broker.
@@ -225,6 +226,57 @@ void setup()
 
 	Serial.println( "Setup has completed.\n" );
 } // End of setup() function.
+
+
+/**
+ * @brief configureOTA() will configure and initiate Over The Air (OTA) updates for this device.
+ *
+ */
+void configureOTA()
+{
+	Serial.println( "Configuring OTA." );
+	// Port defaults to 3232
+	// ArduinoOTA.setPort( 3232 );
+
+	// Hostname defaults to esp32-[MAC]
+	ArduinoOTA.setHostname( hostname );
+	Serial.printf( "Using hostname '%s'\n", hostname );
+
+	// No authentication by default
+	// ArduinoOTA.setPassword( "admin" );
+
+	// Password can be set with it's md5 value as well
+	// MD5( admin ) = 21232f297a57a5a743894a0e4a801fc3
+	// ArduinoOTA.setPasswordHash( "21232f297a57a5a743894a0e4a801fc3" );
+
+	ArduinoOTA.onStart( []( {
+		String type;
+		if( ArduinoOTA.getCommand() == U_FLASH )
+			type = "sketch";
+		else
+			type = "filesystem"; // U_SPIFFS
+		// NOTE: if updating SPIFFS this would be the place to unmount SPIFFS using SPIFFS.end()
+		Serial.println( "Start updating " + type ); } );
+	ArduinoOTA.onEnd( []() {
+		Serial.println( "\nEnd" ); } );
+	ArduinoOTA.onProgress( []( unsigned int progress, unsigned int total ) {
+		Serial.printf( "Progress: %u%%\r", ( progress / ( total / 100 ) ) ); } );
+	ArduinoOTA.onError( []( ota_error_t error ) {
+		Serial.printf( "Error[%u]: ", error );
+		if( error == OTA_AUTH_ERROR )
+			Serial.println( "OTA authentication failed!" );
+		else if( error == OTA_BEGIN_ERROR )
+			Serial.println( "OTA transmission failed to initiate properly!" );
+		else if( error == OTA_CONNECT_ERROR )
+			Serial.println( "OTA connection failed!" );
+		else if( error == OTA_RECEIVE_ERROR )
+			Serial.println( "OTA client was unable to properly receive data!" );
+		else if( error == OTA_END_ERROR )
+			Serial.println( "OTA transmission failed to terminate properly!" ); } );
+	ArduinoOTA.begin();
+
+	Serial.println( "OTA is configured and ready." );
+} // End of the configureOTA() function.
 
 
 /*
