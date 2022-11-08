@@ -26,8 +26,8 @@
 #include "SHT2x.h"		  // Rob Tillaart's excellent SHT20-series library: https://github.com/RobTillaart/SHT2x
 
 
-/*
- * Declare network variables.
+/**
+ * @brief Declare network variables.
  * Adjust the commented-out variables to match your network and broker settings.
  * The commented-out variables are stored in "privateInfo.h", which I do not upload to GitHub.
  */
@@ -79,12 +79,11 @@ PubSubClient mqttClient( espClient ); // MQTT client.
 SHT2x htu21d;								  // Environmental sensor.
 
 
-/*
- * onReceiveCallback() handles callback operations for MQTT.
+/**
+ * @brief onReceiveCallback() handles callback operations for MQTT.
  * This function will react to JSON messages containing the "command" property.
  * The "publishTelemetry" and "publishStatus" commands will immediately perform those operations.
- * The "changeTelemetryInterval" expected another property named "value" to have an integer value,
- * which represents the new publish interval in milliseconds.
+ * The "changeTelemetryInterval" expects another property named "value" to have an integer value, which represents the new update interval in milliseconds.
  */
 void onReceiveCallback( char *topic, byte *payload, unsigned int length )
 {
@@ -117,7 +116,7 @@ void onReceiveCallback( char *topic, byte *payload, unsigned int length )
 	{
 		Serial.println( "Changing the publish interval." );
 		unsigned long tempValue = doc["value"];
-		// Only update the value if it is greater than 4 seconds.  This prevents a seconds vs. milliseconds mixup.
+		// Only update the value if it is greater than 4 seconds.  This prevents a seconds vs. milliseconds mix-up.
 		if( tempValue > 4000 )
 			publishInterval = tempValue;
 		Serial.print( "MQTT publish interval has been updated to " );
@@ -181,34 +180,7 @@ void setup()
 		Serial.printf( "Using MQTT port: %d\n", mqttPort );
 	}
 
-	/*
-	 * This section contains the Over The Air (OTA) update code.
-	 * An excellent OTA guide can be found here:
-	 * https://randomnerdtutorials.com/esp8266-ota-updates-with-arduino-ide-over-the-air/
-	 * The setPort(), setHostname(), setPassword() function are all optional.
-	 */
-	// Port defaults to 8266
-	// ArduinoOTA.setPort( 8266 );
-
-	// Hostname defaults to esp8266-[ChipID]
-	ArduinoOTA.setHostname( hostname );
-	Serial.printf( "Using hostname '%s'\n", hostname );
-
-	// No authentication by default.  Usage:
-	// ArduinoOTA.setPassword( ( const char * )"abc123" );
-
-	ArduinoOTA.onStart( [](){ Serial.println( "Starting OTA communication." ); } );
-	ArduinoOTA.onEnd( [](){ Serial.println( "\nTerminating OTA communication." ); } );
-	ArduinoOTA.onProgress( []( unsigned int progress, unsigned int total ){ Serial.printf( "OTA progress: %u%%\r", ( progress / ( total / 100 ) ) ); } );
-	ArduinoOTA.onError( []( ota_error_t error ){
-		Serial.printf( "Error[%u]: ", error );
-		if( error == OTA_AUTH_ERROR ) Serial.println( "OTA authentication failed!" );
-		else if( error == OTA_BEGIN_ERROR ) Serial.println( "OTA transmission failed to initiate properly!" );
-		else if( error == OTA_CONNECT_ERROR ) Serial.println( "OTA connection failed!" );
-		else if( error == OTA_RECEIVE_ERROR ) Serial.println( "OTA client was unable to properly receive data!" );
-		else if( error == OTA_END_ERROR ) Serial.println( "OTA transmission failed to terminate properly!" ); } );
-	ArduinoOTA.begin();
-	Serial.println( "OTA is configured and ready." );
+	configureOTA();
 
 	Serial.printf( "IP address: %s\n", ipAddress );
 
@@ -230,57 +202,45 @@ void setup()
 
 /**
  * @brief configureOTA() will configure and initiate Over The Air (OTA) updates for this device.
- *
  */
 void configureOTA()
 {
-	Serial.println( "Configuring OTA." );
-	// Port defaults to 3232
-	// ArduinoOTA.setPort( 3232 );
 
-	// Hostname defaults to esp32-[MAC]
+	/*
+	 * This section contains the Over The Air (OTA) update code.
+	 * An excellent OTA guide can be found here:
+	 * https://randomnerdtutorials.com/esp8266-ota-updates-with-arduino-ide-over-the-air/
+	 * The setPort(), setHostname(), setPassword() function are all optional.
+	 */
+	// Port defaults to 8266
+	// ArduinoOTA.setPort( 8266 );
+
+	// Hostname defaults to esp8266-[ChipID]
 	ArduinoOTA.setHostname( hostname );
 	Serial.printf( "Using hostname '%s'\n", hostname );
 
-	// No authentication by default
-	// ArduinoOTA.setPassword( "admin" );
+	// No authentication by default.  Usage:
+	// ArduinoOTA.setPassword( ( const char * )"abc123" );
 
-	// Password can be set with it's md5 value as well
-	// MD5( admin ) = 21232f297a57a5a743894a0e4a801fc3
-	// ArduinoOTA.setPasswordHash( "21232f297a57a5a743894a0e4a801fc3" );
-
-	ArduinoOTA.onStart( []( {
-		String type;
-		if( ArduinoOTA.getCommand() == U_FLASH )
-			type = "sketch";
-		else
-			type = "filesystem"; // U_SPIFFS
-		// NOTE: if updating SPIFFS this would be the place to unmount SPIFFS using SPIFFS.end()
-		Serial.println( "Start updating " + type ); } );
-	ArduinoOTA.onEnd( []() {
-		Serial.println( "\nEnd" ); } );
-	ArduinoOTA.onProgress( []( unsigned int progress, unsigned int total ) {
-		Serial.printf( "Progress: %u%%\r", ( progress / ( total / 100 ) ) ); } );
-	ArduinoOTA.onError( []( ota_error_t error ) {
-		Serial.printf( "Error[%u]: ", error );
-		if( error == OTA_AUTH_ERROR )
-			Serial.println( "OTA authentication failed!" );
-		else if( error == OTA_BEGIN_ERROR )
-			Serial.println( "OTA transmission failed to initiate properly!" );
-		else if( error == OTA_CONNECT_ERROR )
-			Serial.println( "OTA connection failed!" );
-		else if( error == OTA_RECEIVE_ERROR )
-			Serial.println( "OTA client was unable to properly receive data!" );
-		else if( error == OTA_END_ERROR )
-			Serial.println( "OTA transmission failed to terminate properly!" ); } );
+	ArduinoOTA.onStart( []() { Serial.println( "Starting OTA communication." ); } );
+	ArduinoOTA.onEnd( []() { Serial.println( "\nTerminating OTA communication." ); } );
+	ArduinoOTA.onProgress( []( unsigned int progress, unsigned int total ) { Serial.printf( "OTA progress: %u%%\r", ( progress / ( total / 100 ) ) ); } );
+	ArduinoOTA.onError( []( ota_error_t error )
+							{
+								Serial.printf( "Error[%u]: ", error );
+								if( error == OTA_AUTH_ERROR ) Serial.println( "OTA authentication failed!" );
+								else if( error == OTA_BEGIN_ERROR ) Serial.println( "OTA transmission failed to initiate properly!" );
+								else if( error == OTA_CONNECT_ERROR ) Serial.println( "OTA connection failed!" );
+								else if( error == OTA_RECEIVE_ERROR ) Serial.println( "OTA client was unable to properly receive data!" );
+								else if( error == OTA_END_ERROR ) Serial.println( "OTA transmission failed to terminate properly!" );
+							} );
 	ArduinoOTA.begin();
-
 	Serial.println( "OTA is configured and ready." );
 } // End of the configureOTA() function.
 
 
-/*
- * setupHTU21D() will initialize the sensor and check its status.
+/**
+ * @brief setupHTU21D() will initialize the sensor and check its status.
  */
 void setupHTU21D()
 {
@@ -315,9 +275,8 @@ void setupHTU21D()
 } // End of setupHTU21D function.
 
 
-/*
- * wifiMultiConnect() will iterate through 'wifiSsidArray[]', attempting to connect with the password stored at the same index in 'wifiPassArray[]'.
- *
+/**
+ * @brief wifiMultiConnect() will iterate through 'wifiSsidArray[]', attempting to connect with the password stored at the same index in 'wifiPassArray[]'.
  */
 void wifiMultiConnect()
 {
@@ -386,8 +345,8 @@ void wifiMultiConnect()
 } // End of wifiMultiConnect() function.
 
 
-/*
- * checkForSSID() is used by wifiMultiConnect() to avoid attempting to connect to SSIDs which are not in range.
+/**
+ * @brief checkForSSID() is used by wifiMultiConnect() to avoid attempting to connect to SSIDs which are not in range.
  * Returns 1 if 'ssidName' can be found.
  * Returns 0 if 'ssidName' cannot be found.
  */
@@ -415,8 +374,8 @@ int checkForSSID( const char *ssidName )
 } // End of checkForSSID() function.
 
 
-/*
- * mqttMultiConnect() will:
+/**
+ * @brief mqttMultiConnect() will:
  * 1. Check the WiFi connection, and reconnect WiFi as needed.
  * 2. Attempt to connect the MQTT client designated in 'mqttBrokerArray[networkIndex]' up to 'maxAttempts' number of times.
  * 3. Subscribe to the topic defined in 'mqttCommandTopic'.
@@ -451,7 +410,6 @@ bool mqttMultiConnect( int maxAttempts )
 		Serial.print( maxAttempts );
 		Serial.println( " times." );
 	}
-
 
 	int attemptNumber = 0;
 	// Loop until MQTT has connected.
@@ -521,8 +479,8 @@ bool mqttMultiConnect( int maxAttempts )
 } // End of mqttMultiConnect() function.
 
 
-/*
- * readTelemetry() will:
+/**
+ * @brief readTelemetry() will:
  * 1. Read from all available sensors.
  * 2. Store legitimate values in global variables.
  * 3. Increment a counter if any value is invalid.
@@ -576,8 +534,8 @@ void readTelemetry()
 } // End of readTelemetry() function.
 
 
-/*
- * printTelemetry() will print the sensor and device data to the serial port.
+/**
+ * @brief printTelemetry() will print the sensor and device data to the serial port.
  */
 void printTelemetry()
 {
@@ -590,8 +548,8 @@ void printTelemetry()
 } // End of printTelemetry() function.
 
 
-/*
- * publishStats() is called by mqttConnect() every time the device (re)connects to the broker, and every publishInterval milliseconds thereafter.
+/**
+ * @brief publishStats() is called by mqttConnect() every time the device (re)connects to the broker, and every publishInterval milliseconds thereafter.
  * It is also called by the callback when the "publishStats" command is received.
  */
 void publishStats()
@@ -621,8 +579,8 @@ void publishStats()
 } // End of publishStats() function.
 
 
-/*
- * publishTelemetry() will publish the sensor and device data over MQTT.
+/**
+ * @brief publishTelemetry() will publish the sensor and device data over MQTT.
  */
 void publishTelemetry()
 {
@@ -650,7 +608,8 @@ void publishTelemetry()
 	{
 		Serial.println( "Successfully published to:" );
 		char buffer[20];
-		// New format: <location>/<device>/<sensor>/<metric>
+		// Device topic format: <location>/<device>/<metric>
+		// Sensor topic format: <location>/<device>/<sensor>/<metric>
 		if( mqttClient.publish( sketchTopic, __FILE__, false ) )
 			Serial.printf( "  %s\n", sketchTopic );
 		if( mqttClient.publish( macTopic, macAddress, false ) )
@@ -684,6 +643,9 @@ void publishTelemetry()
 } // End of publishTelemetry() function.
 
 
+/**
+ * @brief The main loop function.
+ */
 void loop()
 {
 	// Check the mqttClient connection state.
@@ -695,7 +657,8 @@ void loop()
 	ArduinoOTA.handle();
 
 	unsigned long time = millis();
-	if( lastPollTime == 0 || ( ( time > telemetryInterval ) && ( time - telemetryInterval ) > lastPollTime ) )
+	// Print the first time.  Avoid subtraction overflow.  Print every interval.
+	if( lastPollTime == 0 || ( time > telemetryInterval && ( time - telemetryInterval ) > lastPollTime ) )
 	{
 		readTelemetry();
 		printTelemetry();
@@ -704,7 +667,8 @@ void loop()
 	}
 
 	time = millis();
-	if( ( time > publishInterval ) && ( time - publishInterval ) > lastPublishTime )
+	// Print the first time.  Avoid subtraction overflow.  Print every interval.
+	if( lastPublishTime == 0 || ( time > publishInterval && ( time - publishInterval ) > lastPublishTime ) )
 	{
 		publishCount++;
 		Serial.printf( "\n%s\n", __FILE__ );
@@ -720,7 +684,6 @@ void loop()
 
 		Serial.printf( "publishCount: %lu\n", publishCount );
 
-		lastPublishTime = millis();
 		Serial.printf( "Next MQTT publish in %lu seconds.\n\n", publishInterval / 1000 );
 	}
 } // End of loop() function.
