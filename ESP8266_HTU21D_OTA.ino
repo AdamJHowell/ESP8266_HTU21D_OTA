@@ -37,40 +37,38 @@
 // int const mqttPortArray[4] = { 1883, 1883, 1883, 2112 };												// Typically kept in "privateInfo.h".
 
 const char *notes = "adamsDesk/8266/htu21d ESP8266 with HTU21D and OTA";
-const char *hostname = "8266-htu21";									// The network hostname for this device.  Used by OTA and general networking.
-const char *mqttCommandTopic = "adamsDesk/8266/command";			// The topic used to subscribe to update commands.  Commands: publishTelemetry, changeTelemetryInterval, publishStatus.
-const char *sketchTopic = "adamsDesk/8266/sketch";					// The topic used to publish the sketch name.
-const char *macTopic = "adamsDesk/8266/mac";							// The topic used to publish the MAC address.
-const char *ipTopic = "adamsDesk/8266/ip";							// The topic used to publish the IP address.
-const char *rssiTopic = "adamsDesk/8266/rssi";						// The topic used to publish the WiFi Received Signal Strength Indicator.
-const char *publishCountTopic = "adamsDesk/8266/publishCount"; // The topic used to publish the loop count.
-const char *notesTopic = "adamsDesk/8266/notes";					// The topic used to publish notes relevant to this project.
-const char *tempCTopic = "adamsDesk/8266/sht40/tempC";			// The topic used to publish the temperature in Celsius.
-const char *tempFTopic = "adamsDesk/8266/sht40/tempF";			// The topic used to publish the temperature in Fahrenheit.
-const char *humidityTopic = "adamsDesk/8266/sht40/humidity";	// The topic used to publish the humidity.
-const char *mqttTopic = "espWeather";									// The topic used to publish a single JSON message containing all data.
-const char *mqttStatsTopic = "espStats";								// The topic this device will publish to upon connection to the broker.
-const int BUFFER_SIZE = 512;												// The maximum packet size MQTT should transfer.
-const int LED_PIN = 2;														// The blue LED on the Freenove devkit.
-unsigned int consecutiveBadTemp = 0;									// Holds the current number of consecutive invalid temperature readings.
-unsigned int consecutiveBadHumidity = 0;								// Holds the current number of consecutive invalid humidity readings.
-unsigned int networkIndex = 2112;										// Holds the correct index for the network arrays: wifiSsidArray[], wifiPassArray[], mqttBrokerArray[], and mqttPortArray[].
-unsigned long publishInterval = 60000;									// The delay in milliseconds between MQTT publishes.  This prevents "flooding" the broker.
-unsigned long telemetryInterval = 10000;								// The delay in milliseconds between polls of the sensor.  This should be greater than 100 milliseconds.
-unsigned long lastPublishTime = 0;										// The time since last MQTT publish.
-unsigned long lastPollTime = 0;											// The time since last sensor poll.
-unsigned long publishCount = 0;											// A count of how many publishes have taken place.
-unsigned long wifiConnectionTimeout = 10000;							// The maximum amount of time in milliseconds to wait for a WiFi connection before trying a different SSID.
-unsigned long mqttReconnectDelay = 5000;								// How long in milliseconds to delay between MQTT broker connection attempts.
-float tempC;																	// A global to hold the temperature in Celsius.
-float tempF;																	// A global to hold the temperature in Fahrenheit.
-float humidity;																// A global to hold the relative humidity reading.
-long rssi;																		// A global to hold the Received Signal Strength Indicator.
-char macAddress[18];															// The MAC address of the WiFi NIC.
-char ipAddress[16];															// The IP address given to the device.
-char *activeWifiSsid;														// The WiFi SSID currently connected to.
-char *activeMqttBroker;														// The MQTT broker currently connected to.
-unsigned int activeMqttPort;												// The MQTT port currently in use.
+const char *hostname = "8266-htu21";											// The network hostname for this device.  Used by OTA and general networking.
+const char *mqttCommandTopic = "adamsDesk/8266/command";					// The topic used to subscribe to update commands.  Commands: publishTelemetry, changeTelemetryInterval, publishStatus.
+const char *sketchTopic = "adamsDesk/8266/sketch";							// The topic used to publish the sketch name.
+const char *macTopic = "adamsDesk/8266/mac";									// The topic used to publish the MAC address.
+const char *ipTopic = "adamsDesk/8266/ip";									// The topic used to publish the IP address.
+const char *rssiTopic = "adamsDesk/8266/rssi";								// The topic used to publish the WiFi Received Signal Strength Indicator.
+const char *publishCountTopic = "adamsDesk/8266/publishCount";			// The topic used to publish the loop count.
+const char *notesTopic = "adamsDesk/8266/notes";							// The topic used to publish notes relevant to this project.
+const char *tempCTopic = "adamsDesk/8266/sht40/tempC";					// The topic used to publish the temperature in Celsius.
+const char *tempFTopic = "adamsDesk/8266/sht40/tempF";					// The topic used to publish the temperature in Fahrenheit.
+const char *humidityTopic = "adamsDesk/8266/sht40/humidity";			// The topic used to publish the humidity.
+const char *mqttTopic = "espWeather";											// The topic used to publish a single JSON message containing all data.
+const char *mqttStatsTopic = "espStats";										// The topic this device will publish to upon connection to the broker.
+const int BUFFER_SIZE = 512;														// The maximum packet size MQTT should transfer.
+const int MILLIS_IN_SEC = 1000;													// The number of milliseconds in one second.
+const int LED_PIN = 2;																// The blue LED on the Freenove devkit.
+unsigned int consecutiveBadTemp = 0;											// Holds the current number of consecutive invalid temperature readings.
+unsigned int consecutiveBadHumidity = 0;										// Holds the current number of consecutive invalid humidity readings.
+unsigned int networkIndex = 2112;												// Holds the correct index for the network arrays: wifiSsidArray[], wifiPassArray[], mqttBrokerArray[], and mqttPortArray[].
+unsigned long publishInterval = 60 * MILLIS_IN_SEC;						// The delay in milliseconds between MQTT publishes.  This prevents "flooding" the broker.
+unsigned long telemetryInterval = 10 * MILLIS_IN_SEC;						// The delay in milliseconds between polls of the sensor.  This should be greater than 100 milliseconds.
+unsigned long lastPublishTime = 0;												// The time since last MQTT publish.
+unsigned long lastPollTime = 0;													// The time since last sensor poll.
+unsigned long publishCount = 0;													// A count of how many publishes have taken place.
+unsigned long wifiConnectionTimeout = 10 * MILLIS_IN_SEC;				// The maximum amount of time in milliseconds to wait for a WiFi connection before trying a different SSID.
+unsigned long mqttReconnectDelay = 5 * MILLIS_IN_SEC;						// How long in milliseconds to delay between MQTT broker connection attempts.
+float tempC;																			// A global to hold the temperature in Celsius.
+float tempF;																			// A global to hold the temperature in Fahrenheit.
+float humidity;																		// A global to hold the relative humidity reading.
+long rssi;																				// A global to hold the Received Signal Strength Indicator.
+char macAddress[18];																	// The MAC address of the WiFi NIC.
+char ipAddress[16];																	// The IP address given to the device.
 
 
 // Create class objects.
@@ -98,7 +96,7 @@ void onReceiveCallback( char *topic, byte *payload, unsigned int length )
 	Serial.println();
 	// Add the null terminator.
 	str[i] = 0;
-	StaticJsonDocument<256> doc;
+	StaticJsonDocument<BUFFER_SIZE> doc;
 	deserializeJson( doc, str );
 
 	// The command can be: publishTelemetry, publishStatus, changeTelemetryInterval, or changePublishInterval.
@@ -117,7 +115,7 @@ void onReceiveCallback( char *topic, byte *payload, unsigned int length )
 		Serial.println( "Changing the publish interval." );
 		unsigned long tempValue = doc["value"];
 		// Only update the value if it is greater than 4 seconds.  This prevents a seconds vs. milliseconds mix-up.
-		if( tempValue > 4000 )
+		if( tempValue > 4 * MILLIS_IN_SEC )
 			publishInterval = tempValue;
 		Serial.print( "MQTT publish interval has been updated to " );
 		Serial.println( publishInterval );
@@ -142,13 +140,13 @@ void setup()
 {
 	// Start the Serial communication to send messages to the computer.
 	Serial.begin( 115200 );
-	delay( 1000 );
+	delay( MILLIS_IN_SEC );
 
 	pinMode( LED_PIN, OUTPUT );
 	digitalWrite( LED_PIN, LOW );
 
 	if( !Serial )
-		delay( 1000 );
+		delay( MILLIS_IN_SEC );
 
 	Serial.println( "\nSetup is initiating..." );
 	Wire.begin();
@@ -185,16 +183,16 @@ void setup()
 	Serial.printf( "IP address: %s\n", ipAddress );
 
 	// Connect to the MQTT broker.
-	mqttMultiConnect( 10 );
+	mqttMultiConnect( 5 );
 
 	// Take the first temperature and humidity readings.
-	readTelemetry();
+	//	readTelemetry();
 
 	// Print the first readings to the terminal.
-	printTelemetry();
+	//	printTelemetry();
 
 	// Publish the first readings to the MQTT broker.
-	publishTelemetry();
+	//	publishTelemetry();
 
 	Serial.println( "Setup has completed.\n" );
 } // End of setup() function.
@@ -222,18 +220,20 @@ void configureOTA()
 	// No authentication by default.  Usage:
 	// ArduinoOTA.setPassword( ( const char * )"abc123" );
 
-	ArduinoOTA.onStart( []() { Serial.println( "Starting OTA communication." ); } );
-	ArduinoOTA.onEnd( []() { Serial.println( "\nTerminating OTA communication." ); } );
-	ArduinoOTA.onProgress( []( unsigned int progress, unsigned int total ) { Serial.printf( "OTA progress: %u%%\r", ( progress / ( total / 100 ) ) ); } );
+	ArduinoOTA.onStart( []()
+							  { Serial.println( "Starting OTA communication." ); } );
+	ArduinoOTA.onEnd( []()
+							{ Serial.println( "\nTerminating OTA communication." ); } );
+	ArduinoOTA.onProgress( []( unsigned int progress, unsigned int total )
+								  { Serial.printf( "OTA progress: %u%%\r", ( progress / ( total / 100 ) ) ); } );
 	ArduinoOTA.onError( []( ota_error_t error )
-							{
+							  {
 								Serial.printf( "Error[%u]: ", error );
 								if( error == OTA_AUTH_ERROR ) Serial.println( "OTA authentication failed!" );
 								else if( error == OTA_BEGIN_ERROR ) Serial.println( "OTA transmission failed to initiate properly!" );
 								else if( error == OTA_CONNECT_ERROR ) Serial.println( "OTA connection failed!" );
 								else if( error == OTA_RECEIVE_ERROR ) Serial.println( "OTA client was unable to properly receive data!" );
-								else if( error == OTA_END_ERROR ) Serial.println( "OTA transmission failed to terminate properly!" );
-							} );
+								else if( error == OTA_END_ERROR ) Serial.println( "OTA transmission failed to terminate properly!" ); } );
 	ArduinoOTA.begin();
 	Serial.println( "OTA is configured and ready." );
 } // End of the configureOTA() function.
@@ -304,7 +304,7 @@ void wifiMultiConnect()
 			unsigned long wifiConnectionStartTime = millis();
 			// Wait up to 10 seconds for a connection.
 			Serial.print( "Waiting up to " );
-			Serial.print( wifiConnectionTimeout / 1000 );
+			Serial.print( wifiConnectionTimeout / MILLIS_IN_SEC );
 			Serial.print( " seconds for a connection" );
 			/*
 			WiFi.status() return values:
@@ -320,7 +320,7 @@ void wifiMultiConnect()
 			while( WiFi.status() != WL_CONNECTED && ( millis() - wifiConnectionStartTime < wifiConnectionTimeout ) )
 			{
 				Serial.print( "." );
-				delay( 1000 );
+				delay( MILLIS_IN_SEC );
 			}
 			Serial.println( "" );
 
@@ -462,7 +462,7 @@ bool mqttMultiConnect( int maxAttempts )
 			else
 				Serial.println( "" );
 
-			Serial.printf( "Trying again in %lu seconds.\n\n", mqttReconnectDelay / 1000 );
+			Serial.printf( "Trying again in %lu seconds.\n\n", mqttReconnectDelay / MILLIS_IN_SEC );
 			delay( mqttReconnectDelay );
 		}
 		attemptNumber++;
@@ -531,6 +531,7 @@ void readTelemetry()
 			ESP.restart(); // Reset the device.
 		}
 	}
+	lastPollTime = millis();
 } // End of readTelemetry() function.
 
 
@@ -545,6 +546,9 @@ void printTelemetry()
 	Serial.printf( "Temperature: %.2f F\n", tempF );
 	Serial.printf( "Humidity: %.2f %%\n", humidity );
 	Serial.printf( "WiFi RSSI: %ld\n", rssi );
+	Serial.printf( "Publish count: %lu\n", publishCount );
+	Serial.printf( "File name: %s\n", __FILE__ );
+	Serial.printf( "Next telemetry poll in %lu seconds\n\n", telemetryInterval / MILLIS_IN_SEC );
 } // End of printTelemetry() function.
 
 
@@ -554,7 +558,7 @@ void printTelemetry()
  */
 void publishStats()
 {
-	char mqttStatsString[256];
+	char mqttStatsString[BUFFER_SIZE];
 	// Create a JSON Document on the stack.
 	StaticJsonDocument<BUFFER_SIZE> doc;
 	// Add data: __FILE__, macAddress, ipAddress, rssi, publishCount
@@ -640,6 +644,8 @@ void publishTelemetry()
 	// Print the JSON to the Serial port.
 	Serial.println( mqttString );
 	lastPublishTime = millis();
+
+	Serial.printf( "Next MQTT publish in %lu seconds.\n\n", publishInterval / MILLIS_IN_SEC );
 } // End of publishTelemetry() function.
 
 
@@ -648,12 +654,12 @@ void publishTelemetry()
  */
 void loop()
 {
-	// Check the mqttClient connection state.
+	// Check the WiFi and MQTT client connection state.
 	if( !mqttClient.connected() )
-		mqttMultiConnect( 10 );
-	// The loop() function facilitates the receiving of messages and maintains the connection to the broker.
+		mqttMultiConnect( 5 );
+	// The MQTT loop() function facilitates the receiving of messages and maintains the connection to the broker.
 	mqttClient.loop();
-
+	// The OTA handle() function broadcasts this device's presence to compatible clients on the same Wi-Fi network.
 	ArduinoOTA.handle();
 
 	unsigned long time = millis();
@@ -662,28 +668,15 @@ void loop()
 	{
 		readTelemetry();
 		printTelemetry();
-		lastPollTime = millis();
-		Serial.printf( "Next telemetry poll in %lu seconds\n\n", telemetryInterval / 1000 );
 	}
 
 	time = millis();
-	// Print the first time.  Avoid subtraction overflow.  Print every interval.
+	// Publish the first time.  Avoid subtraction overflow.  Publish every interval.
 	if( lastPublishTime == 0 || ( time > publishInterval && ( time - publishInterval ) > lastPublishTime ) )
 	{
 		publishCount++;
-		Serial.printf( "\n%s\n", __FILE__ );
-
-		// Populate temperature and humidity variables with fresh data.
 		readTelemetry();
-
-		// Print the readings to the terminal.
 		printTelemetry();
-
-		// Publish the readings to the MQTT broker.
 		publishTelemetry();
-
-		Serial.printf( "publishCount: %lu\n", publishCount );
-
-		Serial.printf( "Next MQTT publish in %lu seconds.\n\n", publishInterval / 1000 );
 	}
 } // End of loop() function.
