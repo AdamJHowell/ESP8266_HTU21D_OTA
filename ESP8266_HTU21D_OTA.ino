@@ -1,6 +1,7 @@
 /**
  * This sketch will use a HTU21D (SHT20/SHT21 compatible) sensor to measure temperature and humidity.
  * The HTU21D uses address 0x40.
+ * One unconventional thing about this devkit is the LED is on when the pin is set to low, rather than high.
  * My topic formats are:
  *    <location>/<device>/<device reading>
  *    <location>/<device>/<sensor type>/<sensor reading>
@@ -145,7 +146,7 @@ void setup()
 	delay( MILLIS_IN_SEC );
 
 	pinMode( MCU_LED, OUTPUT );
-	digitalWrite( MCU_LED, LOW );
+	digitalWrite( MCU_LED, 0 );
 
 	if( !Serial )
 		delay( MILLIS_IN_SEC );
@@ -282,7 +283,7 @@ void setupHTU21D()
  */
 void wifiMultiConnect()
 {
-	digitalWrite( MCU_LED, HIGH ); // Turn the LED off to show a connection is being made.
+	digitalWrite( MCU_LED, 1 ); // Turn the LED off to show a connection is being made.
 
 	Serial.println( "\nEntering wifiMultiConnect()" );
 	for( size_t networkArrayIndex = 0; networkArrayIndex < sizeof( wifiSsidArray ); networkArrayIndex++ )
@@ -328,7 +329,7 @@ void wifiMultiConnect()
 
 			if( WiFi.status() == WL_CONNECTED )
 			{
-				digitalWrite( MCU_LED, LOW ); // Turn the LED on to show the connection was successful.
+				digitalWrite( MCU_LED, 0 ); // Turn the LED on to show the connection was successful.
 				Serial.print( "IP address: " );
 				snprintf( ipAddress, 16, "%d.%d.%d.%d", WiFi.localIP()[0], WiFi.localIP()[1], WiFi.localIP()[2], WiFi.localIP()[3] );
 				Serial.println( ipAddress );
@@ -389,7 +390,7 @@ bool mqttMultiConnect( int maxAttempts )
 	if( WiFi.status() != WL_CONNECTED )
 		wifiMultiConnect();
 
-	digitalWrite( MCU_LED, HIGH ); // Turn the LED off to show a connection is being made.
+	digitalWrite( MCU_LED, 1 ); // Turn the LED off to show a connection is being made.
 
 	/*
 	 * The networkIndex variable is initialized to 2112.
@@ -425,7 +426,7 @@ bool mqttMultiConnect( int maxAttempts )
 		Serial.printf( "Attempt # %d....", ( attemptNumber + 1 ) );
 		if( mqttClient.connect( clientId ) )
 		{
-			digitalWrite( MCU_LED, LOW ); // Turn the LED on to show the connection was successful.
+			digitalWrite( MCU_LED, 0 ); // Turn the LED on to show the connection was successful.
 			Serial.println( " connected." );
 			if( !mqttClient.setBufferSize( BUFFER_SIZE ) )
 			{
@@ -707,7 +708,7 @@ void loop()
 			if( mqttClient.state() != 0 )
 				toggleLED();
 			else
-				digitalWrite( MCU_LED, 1 );
+				digitalWrite( MCU_LED, 0 );   // Turn the LED on to show both Wi-Fi and MQTT are connected.
 		}
 	}
 } // End of loop() function.
