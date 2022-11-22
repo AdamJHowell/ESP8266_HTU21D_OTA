@@ -58,8 +58,10 @@ unsigned int consecutiveBadHumidity = 0;										// Holds the current number of
 unsigned int networkIndex = 2112;												// Holds the correct index for the network arrays: wifiSsidArray[], wifiPassArray[], mqttBrokerArray[], and mqttPortArray[].
 unsigned long publishInterval = 60 * MILLIS_IN_SEC;						// The delay in milliseconds between MQTT publishes.  This prevents "flooding" the broker.
 unsigned long telemetryInterval = 10 * MILLIS_IN_SEC;						// The delay in milliseconds between polls of the sensor.  This should be greater than 100 milliseconds.
-unsigned long lastPublishTime = 0;												// The time since last MQTT publish.
-unsigned long lastPollTime = 0;													// The time since last sensor poll.
+unsigned long ledBlinkInterval = 200;								// The interval between telemetry processing times.
+unsigned long lastPublishTime = 0;												// The time of the last MQTT publish.
+unsigned long lastPollTime = 0;													// The time of the last sensor poll.
+unsigned long lastLedBlinkTime = 0;									// The time of the last telemetry process.
 unsigned long publishCount = 0;													// A count of how many publishes have taken place.
 unsigned long wifiConnectionTimeout = 10 * MILLIS_IN_SEC;				// The maximum amount of time in milliseconds to wait for a WiFi connection before trying a different SSID.
 unsigned long mqttReconnectDelay = 5 * MILLIS_IN_SEC;						// How long in milliseconds to delay between MQTT broker connection attempts.
@@ -650,6 +652,19 @@ void publishTelemetry()
 
 
 /**
+ * @brief toggleLED() will change the state of the LED.
+ * This function does not manage any timings.
+ */
+void toggleLED()
+{
+	if( digitalRead( MCU_LED ) != 1 )
+		digitalWrite( MCU_LED, 1 );
+	else
+		digitalWrite( MCU_LED, 0 );
+} // End of toggleLED() function.
+
+
+/**
  * @brief The main loop function.
  */
 void loop()
@@ -678,5 +693,21 @@ void loop()
 		readTelemetry();
 		printTelemetry();
 		publishTelemetry();
+	}
+
+	time = millis();
+	// Process the first time.  Avoid subtraction overflow.  Process every interval.
+	if( lastLedBlinkTime == 0 || ( ( time > ledBlinkInterval ) && ( time - ledBlinkInterval ) > lastLedBlinkTime ) )
+	{
+		lastLedBlinkTime = millis();
+
+		// If Wi-Fi is connected, but MQTT is not, blink the LED.
+		if( WiFi.status() == WL_CONNECTED )
+		{
+			if( mqttClient.state() != 0 )
+				toggleLED();
+			else
+				digitalWrite( MCU_LED, 1 );
+		}
 	}
 } // End of loop() function.
