@@ -52,7 +52,7 @@ const char *mqttTopic = "espWeather";											// The topic used to publish a s
 const char *mqttStatsTopic = "espStats";										// The topic this device will publish to upon connection to the broker.
 const int BUFFER_SIZE = 512;														// The maximum packet size MQTT should transfer.
 const int MILLIS_IN_SEC = 1000;													// The number of milliseconds in one second.
-const int LED_PIN = 2;																// The blue LED on the Freenove devkit.
+const int MCU_LED = 2;																// The blue LED on the Freenove devkit.
 unsigned int consecutiveBadTemp = 0;											// Holds the current number of consecutive invalid temperature readings.
 unsigned int consecutiveBadHumidity = 0;										// Holds the current number of consecutive invalid humidity readings.
 unsigned int networkIndex = 2112;												// Holds the correct index for the network arrays: wifiSsidArray[], wifiPassArray[], mqttBrokerArray[], and mqttPortArray[].
@@ -144,8 +144,8 @@ void setup()
 	Serial.begin( 115200 );
 	delay( MILLIS_IN_SEC );
 
-	pinMode( LED_PIN, OUTPUT );
-	digitalWrite( LED_PIN, LOW );
+	pinMode( MCU_LED, OUTPUT );
+	digitalWrite( MCU_LED, LOW );
 
 	if( !Serial )
 		delay( MILLIS_IN_SEC );
@@ -282,7 +282,7 @@ void setupHTU21D()
  */
 void wifiMultiConnect()
 {
-	digitalWrite( LED_PIN, HIGH ); // Turn the LED off to show a connection is being made.
+	digitalWrite( MCU_LED, HIGH ); // Turn the LED off to show a connection is being made.
 
 	Serial.println( "\nEntering wifiMultiConnect()" );
 	for( size_t networkArrayIndex = 0; networkArrayIndex < sizeof( wifiSsidArray ); networkArrayIndex++ )
@@ -328,7 +328,7 @@ void wifiMultiConnect()
 
 			if( WiFi.status() == WL_CONNECTED )
 			{
-				digitalWrite( LED_PIN, LOW ); // Turn the LED on to show the connection was successful.
+				digitalWrite( MCU_LED, LOW ); // Turn the LED on to show the connection was successful.
 				Serial.print( "IP address: " );
 				snprintf( ipAddress, 16, "%d.%d.%d.%d", WiFi.localIP()[0], WiFi.localIP()[1], WiFi.localIP()[2], WiFi.localIP()[3] );
 				Serial.println( ipAddress );
@@ -389,7 +389,7 @@ bool mqttMultiConnect( int maxAttempts )
 	if( WiFi.status() != WL_CONNECTED )
 		wifiMultiConnect();
 
-	digitalWrite( LED_PIN, HIGH ); // Turn the LED off to show a connection is being made.
+	digitalWrite( MCU_LED, HIGH ); // Turn the LED off to show a connection is being made.
 
 	/*
 	 * The networkIndex variable is initialized to 2112.
@@ -425,7 +425,7 @@ bool mqttMultiConnect( int maxAttempts )
 		Serial.printf( "Attempt # %d....", ( attemptNumber + 1 ) );
 		if( mqttClient.connect( clientId ) )
 		{
-			digitalWrite( LED_PIN, LOW ); // Turn the LED on to show the connection was successful.
+			digitalWrite( MCU_LED, LOW ); // Turn the LED on to show the connection was successful.
 			Serial.println( " connected." );
 			if( !mqttClient.setBufferSize( BUFFER_SIZE ) )
 			{
