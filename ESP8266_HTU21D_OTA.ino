@@ -24,17 +24,17 @@ void onReceiveCallback( char *topic, byte *payload, unsigned int length )
 	unsigned int i = 0;
 	for( i = 0; i < length; i++ )
 	{
-		Serial.print(( char ) payload[ i ] );
-		str[ i ] = ( char ) payload[ i ];
+		Serial.print(( char ) payload[i] );
+		str[i] = ( char ) payload[i];
 	}
 	Serial.println();
 	// Add the null terminator.
-	str[ i ] = 0;
+	str[i] = 0;
 	StaticJsonDocument <BUFFER_SIZE> doc;
 	deserializeJson( doc, str );
 
 	// The command can be: publishTelemetry, publishStatus, changeTelemetryInterval, or changePublishInterval.
-	const char *command = doc[ "command" ];
+	const char *command = doc["command"];
 	if( strcmp( command, "publishTelemetry" ) == 0 )
 	{
 		Serial.println( "Reading and publishing sensor values because MQTT received the 'publishTelemetry' command." );
@@ -47,7 +47,7 @@ void onReceiveCallback( char *topic, byte *payload, unsigned int length )
 	else if( strcmp( command, "changeTelemetryInterval" ) == 0 )
 	{
 		Serial.println( "Changing the publish interval because MQTT received the 'changeTelemetryInterval' command." );
-		unsigned long tempValue = doc[ "value" ];
+		unsigned long tempValue = doc["value"];
 		// Only update the value if it is greater than 4 seconds.  This prevents a seconds vs. milliseconds mix-up.
 		if( tempValue > 4 * MILLIS_IN_SEC )
 			publishInterval = tempValue;
@@ -68,7 +68,7 @@ void onReceiveCallback( char *topic, byte *payload, unsigned int length )
 /**
  * The setup() function runs once when the device is booted, and then loop() takes over.
  */
-void setup()
+void setup( )
 {
 	// Wait one second before starting serial communication, to give the user time to connect the terminal.
 	delay( MILLIS_IN_SEC );
@@ -102,8 +102,8 @@ void setup()
 	// The networkIndex variable is initialized to 2112.  If it is still 2112 at this point, then WiFi failed to connect.
 	if( networkIndex != 2112 )
 	{
-		const char *mqttBroker = mqttBrokerArray[ networkIndex ];
-		const int mqttPort = mqttPortArray[ networkIndex ];
+		const char *mqttBroker = mqttBrokerArray[networkIndex];
+		const int  mqttPort    = mqttPortArray[networkIndex];
 		// Set the MQTT client parameters.
 		mqttClient.setServer( mqttBroker, mqttPort );
 		// Assign the onReceiveCallback() function to handle MQTT callbacks.
@@ -127,7 +127,7 @@ void setup()
  * https://randomnerdtutorials.com/esp8266-ota-updates-with-arduino-ide-over-the-air/
  * The setPort(), setHostname(), and setPassword() functions are optional.
  */
-void configureOTA()
+void configureOTA( )
 {
 	// Port defaults to 8266, but can be overridden here:
 	// ArduinoOTA.setPort( 8266 );
@@ -140,12 +140,9 @@ void configureOTA()
 	// ArduinoOTA.setPassword( ( const char * )"abc123" );
 
 	// OTA callbacks are required:
-	ArduinoOTA.onStart( []()
-	                    { Serial.println( "Starting OTA communication." ); } );
-	ArduinoOTA.onEnd( []()
-	                  { Serial.println( "\nTerminating OTA communication." ); } );
-	ArduinoOTA.onProgress( []( unsigned int progress, unsigned int total )
-	                       { Serial.printf( "OTA progress: %u%%\r", ( progress / ( total / 100 ))); } );
+	ArduinoOTA.onStart( []( ){ Serial.println( "Starting OTA communication." ); } );
+	ArduinoOTA.onEnd( []( ){ Serial.println( "\nTerminating OTA communication." ); } );
+	ArduinoOTA.onProgress( []( unsigned int progress, unsigned int total ){ Serial.printf( "OTA progress: %u%%\r", ( progress / ( total / 100 ))); } );
 	ArduinoOTA.onError( []( ota_error_t error )
 	                    {
 		                    Serial.printf( "Error[%u]: ", error );
@@ -163,7 +160,7 @@ void configureOTA()
 /**
  * @brief setupHTU21D() will initialize the sensor and check its status.
  */
-void setupHTU21D()
+void setupHTU21D( )
 {
 	Serial.println( "Initializing the HTU21D sensor." );
 
@@ -200,7 +197,7 @@ void setupHTU21D()
 /**
  * @brief wifiMultiConnect() will iterate through 'wifiSsidArray[]', attempting to connect with the password stored at the same index in 'wifiPassArray[]'.
  */
-void wifiMultiConnect()
+void wifiMultiConnect( )
 {
 	digitalWrite( LED_PIN, 1 ); // Turn the LED off to show a connection is being made.
 
@@ -208,8 +205,8 @@ void wifiMultiConnect()
 	for( size_t networkArrayIndex = 0; networkArrayIndex < sizeof( wifiSsidArray ); networkArrayIndex++ )
 	{
 		// Get the details for this connection attempt.
-		const char *wifiSsid = wifiSsidArray[ networkArrayIndex ];
-		const char *wifiPassword = wifiPassArray[ networkArrayIndex ];
+		const char *wifiSsid     = wifiSsidArray[networkArrayIndex];
+		const char *wifiPassword = wifiPassArray[networkArrayIndex];
 
 		// Announce the WiFi parameters for this connection attempt.
 		Serial.print( "Attempting to connect to SSID \"" );
@@ -250,7 +247,7 @@ void wifiMultiConnect()
 			{
 				digitalWrite( LED_PIN, 0 ); // Turn the LED on to show the connection was successful.
 				Serial.print( "IP address: " );
-				snprintf( ipAddress, 16, "%d.%d.%d.%d", WiFi.localIP()[ 0 ], WiFi.localIP()[ 1 ], WiFi.localIP()[ 2 ], WiFi.localIP()[ 3 ] );
+				snprintf( ipAddress, 16, "%d.%d.%d.%d", WiFi.localIP()[0], WiFi.localIP()[1], WiFi.localIP()[2], WiFi.localIP()[3] );
 				Serial.println( ipAddress );
 				networkIndex = networkArrayIndex;
 				// Print that WiFi has connected.
@@ -330,9 +327,9 @@ void mqttMultiConnect( int maxAttempts )
 		if( networkIndex != 2112 )
 		{
 			Serial.print( "Attempting to connect to the MQTT broker at '" );
-			Serial.print( mqttBrokerArray[ networkIndex ] );
+			Serial.print( mqttBrokerArray[networkIndex] );
 			Serial.print( ":" );
-			Serial.print( mqttPortArray[ networkIndex ] );
+			Serial.print( mqttPortArray[networkIndex] );
 			Serial.print( "' up to " );
 			Serial.print( maxAttempts );
 			Serial.println( " times." );
@@ -350,7 +347,9 @@ void mqttMultiConnect( int maxAttempts )
 		{
 			// Put the macAddress and random number into clientId.
 			char clientId[22];
-			snprintf( clientId, 22, "%s-%03ld", macAddress, random( 999 ));
+			// Optionally add random( 999 ) to this to create a pseudo-random client ID.
+//			snprintf( clientId, 22, "%s-%03ld", macAddress, random( 999 ) );
+			snprintf( clientId, 22, "%s", macAddress );
 			// Connect to the broker using the MAC address for a clientID.  This guarantees that the clientID is unique.
 			Serial.printf( "Connecting with client ID '%s'.\n", clientId );
 			Serial.printf( "Attempt # %d....", ( attemptNumber + 1 ));
@@ -425,7 +424,7 @@ void mqttMultiConnect( int maxAttempts )
  * 2. Store legitimate values in global variables.
  * 3. Increment a counter if any value is invalid.
  */
-void readTelemetry()
+void readTelemetry( )
 {
 	rssi = WiFi.RSSI();
 	// Read fresh data from the sensor.
@@ -433,13 +432,13 @@ void readTelemetry()
 	{
 		// Get the results from the .read().
 		float temporaryTemperature = htu21d.getTemperature();
-		float temporaryHumidity = htu21d.getHumidity();
+		float temporaryHumidity    = htu21d.getHumidity();
 
 		// Define the valid temperature range (in Celsius) for this sensor.
 		if( temporaryTemperature > -30 || temporaryTemperature < 90 )
 		{
-			tempC = temporaryTemperature;
-			tempF = ( tempC * 9 / 5 ) + 32;
+			tempC              = temporaryTemperature;
+			tempF              = ( tempC * 9 / 5 ) + 32;
 			// Clear the consecutive bad count.
 			consecutiveBadTemp = 0;
 		}
@@ -452,7 +451,7 @@ void readTelemetry()
 		// Define the valid humidity range for this sensor.
 		if( temporaryHumidity >= 0 || temporaryHumidity <= 100 )
 		{
-			humidity = temporaryHumidity;
+			humidity               = temporaryHumidity;
 			// Clear the consecutive bad count.
 			consecutiveBadHumidity = 0;
 		}
@@ -478,11 +477,11 @@ void readTelemetry()
 /**
  * @brief printTelemetry() will print the sensor and device data to the serial port.
  */
-void printTelemetry()
+void printTelemetry( )
 {
 	Serial.println();
 	Serial.printf( "MAC address: %s\n", macAddress );
-	int wifiStatusCode = WiFi.status();
+	int  wifiStatusCode = WiFi.status();
 	char buffer[29];
 	lookupWifiCode( wifiStatusCode, buffer );
 	Serial.printf( "Wi-Fi status: %d, %s\n", wifiStatusCode, buffer );
@@ -491,12 +490,12 @@ void printTelemetry()
 	Serial.printf( "MQTT state: %d, %s\n", mqttStateCode, buffer );
 	if( wifiStatusCode == 3 )
 	{
-		Serial.printf( "Wi-Fi SSID: %s\n", WiFi.SSID() );
+		Serial.printf( "Wi-Fi SSID: %s\n", WiFi.SSID());
 		Serial.printf( "IP address: %s\n", ipAddress );
 		Serial.printf( "RSSI: %ld\n", rssi );
 	}
 	if( networkIndex != 2112 )
-		Serial.printf( "Broker: %s:%d\n", mqttBrokerArray[ networkIndex ], mqttPortArray[ networkIndex ] );
+		Serial.printf( "Broker: %s:%d\n", mqttBrokerArray[networkIndex], mqttPortArray[networkIndex] );
 
 	Serial.printf( "Hostname: %s\n", hostname );
 	Serial.printf( "Sketch file name: %s\n", __FILE__ );
@@ -591,18 +590,18 @@ void lookupMQTTCode( int code, char *buffer )
  * @brief publishStats() is called by mqttConnect() every time the device (re)connects to the broker, and every publishInterval milliseconds thereafter.
  * It is also called by the callback when the "publishStats" command is received.
  */
-void publishStats()
+void publishStats( )
 {
-	char mqttStatsString[BUFFER_SIZE];
+	char                             mqttStatsString[BUFFER_SIZE];
 	// Create a JSON Document on the stack.
 	StaticJsonDocument <BUFFER_SIZE> doc;
 	// Add data: __FILE__, macAddress, ipAddress, rssi, publishCount
-	doc[ "sketch" ] = __FILE__;
-	doc[ "mac" ] = macAddress;
-	doc[ "ip" ] = ipAddress;
-	doc[ "rssi" ] = rssi;
-	doc[ "notes" ] = notes;
-	doc[ "publishCount" ] = publishCount;
+	doc["sketch"]       = __FILE__;
+	doc["mac"]          = macAddress;
+	doc["ip"]           = ipAddress;
+	doc["rssi"]         = rssi;
+	doc["notes"]        = notes;
+	doc["publishCount"] = publishCount;
 
 	// Serialize the JSON into mqttStatsString, with indentation and line breaks.
 	serializeJsonPretty( doc, mqttStatsString );
@@ -612,7 +611,7 @@ void publishStats()
 	if( mqttClient.connected())
 	{
 		if( mqttClient.connected() && mqttClient.publish( mqttStatsTopic, mqttStatsString ))
-			Serial.printf( "Published to this broker and port: %s:%d, and to this topic '%s':\n%s\n", mqttBrokerArray[ networkIndex ], mqttPortArray[ networkIndex ], mqttStatsTopic, mqttStatsString );
+			Serial.printf( "Published to this broker and port: %s:%d, and to this topic '%s':\n%s\n", mqttBrokerArray[networkIndex], mqttPortArray[networkIndex], mqttStatsTopic, mqttStatsString );
 		else
 			Serial.println( "\n\nPublish failed!\n\n" );
 	}
@@ -623,22 +622,22 @@ void publishStats()
  * @brief publishTelemetry() will publish the sensor and device data over MQTT.
  * It is also called by the callback when the "publishTelemetry" command is received.
  */
-void publishTelemetry()
+void publishTelemetry( )
 {
 	char mqttString[BUFFER_SIZE]; // A String to hold the JSON.
 
 	// Create a JSON Document on the stack.
 	StaticJsonDocument <BUFFER_SIZE> doc;
 	// Add data: __FILE__, macAddress, ipAddress, temperature, tempF, humidity, rssi, publishCount, notes
-	doc[ "sketch" ] = __FILE__;
-	doc[ "mac" ] = macAddress;
-	doc[ "ip" ] = ipAddress;
-	doc[ "rssi" ] = rssi;
-	doc[ "notes" ] = notes;
-	doc[ "tempC" ] = tempC;
-	doc[ "tempF" ] = tempF;
-	doc[ "humidity" ] = humidity;
-	doc[ "publishCount" ] = publishCount;
+	doc["sketch"]       = __FILE__;
+	doc["mac"]          = macAddress;
+	doc["ip"]           = ipAddress;
+	doc["rssi"]         = rssi;
+	doc["notes"]        = notes;
+	doc["tempC"]        = tempC;
+	doc["tempF"]        = tempF;
+	doc["humidity"]     = humidity;
+	doc["publishCount"] = publishCount;
 
 	// Serialize the JSON into mqttString, with indentation and line breaks.
 	serializeJsonPretty( doc, mqttString );
@@ -690,7 +689,7 @@ void publishTelemetry()
  * @brief toggleLED() will change the state of the LED.
  * This function does not manage any timings.
  */
-void toggleLED()
+void toggleLED( )
 {
 	if( digitalRead( LED_PIN ) != 1 )
 		digitalWrite( LED_PIN, 1 );
@@ -702,7 +701,7 @@ void toggleLED()
 /**
  * @brief The main loop function.
  */
-void loop()
+void loop( )
 {
 	// Check the WiFi and MQTT client connection state.
 	if( !mqttClient.connected())
