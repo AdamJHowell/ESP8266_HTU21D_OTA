@@ -712,7 +712,7 @@ void loop( )
 	ArduinoOTA.handle();
 
 	unsigned long currentTime = millis();
-	// Print the first currentTime.  Avoid subtraction overflow.  Print every interval.
+	// Print the first time.  Avoid subtraction overflow.  Print every interval.
 	if( lastPollTime == 0 || ( currentTime > telemetryInterval && ( currentTime - telemetryInterval ) > lastPollTime ))
 	{
 		readTelemetry();
@@ -720,7 +720,7 @@ void loop( )
 	}
 
 	currentTime = millis();
-	// Publish the first currentTime.  Avoid subtraction overflow.  Publish every interval.
+	// Publish the first time.  Avoid subtraction overflow.  Publish every interval.
 	if( lastPublishTime == 0 || ( currentTime > publishInterval && ( currentTime - publishInterval ) > lastPublishTime ))
 	{
 		publishCount++;
@@ -730,7 +730,7 @@ void loop( )
 	}
 
 	currentTime = millis();
-	// Process the first currentTime.  Avoid subtraction overflow.  Process every interval.
+	// Process the first time.  Avoid subtraction overflow.  Process every interval.
 	if( lastLedBlinkTime == 0 || (( currentTime > ledBlinkInterval ) && ( currentTime - ledBlinkInterval ) > lastLedBlinkTime ))
 	{
 		lastLedBlinkTime = millis();
